@@ -294,8 +294,32 @@ def card(content: str) -> None:
 # ── App ───────────────────────────────────────────────────────────────────────
 
 def main() -> None:
-    st.set_page_config(page_title=PAGE_TITLE, page_icon="🧠", layout="wide", initial_sidebar_state="expanded")
-    inject_css()
+    st.set_page_config(
+    page_title=PAGE_TITLE,
+    page_icon="🧠",
+    layout="wide",
+    initial_sidebar_state="expanded",
+    menu_items={
+        'Get Help': None,
+        'Report a bug': None,
+        'About': None
+    }
+)
+   def inject_css() -> None:
+    st.markdown("""
+    <style>
+    /* Hide Streamlit toolbar and footer */
+    header {visibility: hidden;}
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    [data-testid="stToolbar"] {visibility: hidden;}
+    [data-testid="stDecoration"] {visibility: hidden;}
+
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;800&family=DM+Sans:wght@300;400;500&display=swap');
+    
+    ... rest of your CSS ...
+    </style>
+    """, unsafe_allow_html=True)
 
     for k, v in {"plan": None, "feedback": None, "last_subjects": [], "last_hours": 0.0}.items():
         st.session_state.setdefault(k, v)
