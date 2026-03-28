@@ -305,21 +305,7 @@ def main() -> None:
         'About': None
     }
 )
-   def inject_css() -> None:
-    st.markdown("""
-    <style>
-    /* Hide Streamlit toolbar and footer */
-    header {visibility: hidden;}
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    [data-testid="stToolbar"] {visibility: hidden;}
-    [data-testid="stDecoration"] {visibility: hidden;}
-
-    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;800&family=DM+Sans:wght@300;400;500&display=swap');
-    
-    ... rest of your CSS ...
-    </style>
-    """, unsafe_allow_html=True)
+    inject_css()
 
     for k, v in {"plan": None, "feedback": None, "last_subjects": [], "last_hours": 0.0}.items():
         st.session_state.setdefault(k, v)
