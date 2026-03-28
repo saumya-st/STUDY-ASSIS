@@ -384,8 +384,6 @@ def main() -> None:
 
     # ── Input form — always visible, no sidebar ───────────────────────────────
     st.markdown('<div class="section-label">📚 Plan Your Study Session</div>', unsafe_allow_html=True)
-    st.markdown('<div class="form-card">', unsafe_allow_html=True)
-
     col1, col2 = st.columns([2, 1])
     with col1:
         subjects_raw = st.text_input("Subjects", placeholder="e.g. Math, Physics, DSA",
@@ -401,8 +399,6 @@ def main() -> None:
         for i, subj in enumerate(subjects):
             with cols[i]:
                 priorities[subj] = st.slider(subj, 1, 5, 3, key=f"pri_{subj}")
-
-    st.markdown('</div>', unsafe_allow_html=True)
 
     generate = st.button("🚀 Generate My Study Plan", use_container_width=True)
 
