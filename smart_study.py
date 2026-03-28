@@ -131,19 +131,21 @@ def _chat(prompt: str, system: str = "") -> Optional[str]:
         return None
 
 
-def generate_study_plan(subjects: list[str], hours: float, priorities: dict[str, int]) -> Optional[str]:
+def generate_study_plan(subjects: list[str], hours: float, priorities: dict[str, int], start_time: datetime.time = datetime.time(9,0), end_time: datetime.time = datetime.time(12,0)) -> Optional[str]:
     priority_str = ", ".join(f"{s} (priority {p}/5)" for s, p in priorities.items())
     prompt = f"""
 Create a detailed, time-blocked study schedule.
 
 Subjects with priorities: {priority_str}
-Total available time: {hours} hours
+Study window: {start_time.strftime('%I:%M %p')} to {end_time.strftime('%I:%M %p')} ({hours} hours total)
 
 Rules:
+- Start the schedule exactly at {start_time.strftime('%I:%M %p')}
+- End the schedule exactly at {end_time.strftime('%I:%M %p')}
 - Allocate more time to higher-priority subjects
 - Include 5-minute breaks every 45 minutes (Pomodoro-style)
-- Add one 15-minute review block at the end
-- Format as a clean numbered schedule with times
+- Add one 15-minute review block before end time
+- Format as a clean numbered schedule with real clock times (e.g. 9:00 AM - 9:45 AM)
 - End with a short motivational sentence
 """
     return _chat(prompt, system="You are a concise, encouraging academic coach.")
@@ -384,13 +386,23 @@ def main() -> None:
 
     # ── Input form — always visible, no sidebar ───────────────────────────────
     st.markdown('<div class="section-label">📚 Plan Your Study Session</div>', unsafe_allow_html=True)
-    col1, col2 = st.columns([2, 1])
+    col1, col2, col3 = st.columns([2, 1, 1])
     with col1:
         subjects_raw = st.text_input("Subjects", placeholder="e.g. Math, Physics, DSA",
                                      help="Enter subjects separated by commas")
         subjects = [s.strip() for s in subjects_raw.split(",") if s.strip()] if subjects_raw else []
     with col2:
-        hours = st.number_input("Total hours available", min_value=0.5, max_value=16.0, value=3.0, step=0.5)
+        start_time = st.time_input("Study starts at", value=datetime.time(9, 0))
+    with col3:
+        end_time = st.time_input("Study ends at", value=datetime.time(12, 0))
+
+    # Calculate hours from time range
+    start_dt = datetime.datetime.combine(datetime.date.today(), start_time)
+    end_dt   = datetime.datetime.combine(datetime.date.today(), end_time)
+    if end_dt <= start_dt:
+        end_dt += datetime.timedelta(days=1)
+    hours = round((end_dt - start_dt).seconds / 3600, 2)
+    st.markdown(f"<p style='color:#e9648b;font-size:0.85rem;font-weight:600;'>⏱ Total study time: <b>{hours} hours</b> ({start_time.strftime('%I:%M %p')} → {end_time.strftime('%I:%M %p')})</p>", unsafe_allow_html=True)
 
     priorities: dict[str, int] = {}
     if subjects:
@@ -408,7 +420,7 @@ def main() -> None:
             st.warning("⚠️ Please enter at least one subject above.")
         else:
             with st.spinner("✨ Crafting your personalised plan…"):
-                plan = generate_study_plan(subjects, hours, priorities)
+                plan = generate_study_plan(subjects, hours, priorities, start_time, end_time)
                 if plan:
                     st.session_state.plan          = plan
                     st.session_state.last_subjects = subjects
