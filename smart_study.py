@@ -339,6 +339,19 @@ def main() -> None:
         generate = st.button("🚀 Generate Plan", use_container_width=True)
         st.caption("Built for students who are trying 🤍")
 
+    # ── Sidebar toggle ───────────────────────────────────────────────────────
+    st.markdown("""
+    <style>
+    [data-testid="collapsedControl"] {
+        display: flex !important;
+        visibility: visible !important;
+        background: #e9648b !important;
+        border-radius: 0 10px 10px 0 !important;
+        color: white !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
     # ── Header ────────────────────────────────────────────────────────────────
     col_title, col_date = st.columns([3, 1])
     with col_title:
@@ -385,10 +398,11 @@ def main() -> None:
         st.markdown("### 📅 Your Study Plan")
         with st.container():
             st.markdown(
-                '<div class="coach-card"></div>',
+                f'''<div class="coach-card" style="padding:1.5rem 1.75rem;">
+                {st.session_state.plan.replace(chr(10), "<br>")}
+                </div>''',
                 unsafe_allow_html=True,
             )
-            st.markdown(st.session_state.plan)
 
         if st.session_state.feedback:
             with st.expander("💬 AI Feedback", expanded=True):
