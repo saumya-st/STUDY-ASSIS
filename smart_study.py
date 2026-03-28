@@ -1,6 +1,6 @@
 """
-AI Study Coach — Pink Theme, Groq API (free, deployable)
-Run: streamlit run app.py
+AI Study Coach — Pink Theme, Groq API
+Run: streamlit run smart_study.py
 """
 
 import streamlit as st
@@ -14,6 +14,7 @@ from dataclasses import dataclass, asdict
 
 import pandas as pd
 from dotenv import load_dotenv
+
 load_dotenv()
 
 # ── Config ────────────────────────────────────────────────────────────────────
@@ -172,6 +173,13 @@ Keep it warm, human, under 120 words.
 def inject_css() -> None:
     st.markdown("""
     <style>
+    /* Hide Streamlit UI */
+    header {visibility: hidden;}
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    [data-testid="stToolbar"] {visibility: hidden;}
+    [data-testid="stDecoration"] {visibility: hidden;}
+
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;800&family=DM+Sans:wght@300;400;500&display=swap');
 
     html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; }
@@ -295,135 +303,17 @@ def card(content: str) -> None:
 
 def main() -> None:
     st.set_page_config(
-    page_title=PAGE_TITLE,
-    page_icon="🧠",
-    layout="wide",
-    initial_sidebar_state="expanded",
-    menu_items={
-        'Get Help': None,
-        'Report a bug': None,
-        'About': None
-    }
-)
-    def inject_css() -> None:
-    st.markdown("""
-    <style>
-    /* Hide Streamlit UI */
-    header {visibility: hidden;}
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    [data-testid="stToolbar"] {visibility: hidden;}
-    [data-testid="stDecoration"] {visibility: hidden;}
-
-    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;800&family=DM+Sans:wght@300;400;500&display=swap');
-
-    html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; }
-    h1, h2, h3 { font-family: 'Playfair Display', serif !important; letter-spacing: -0.01em; }
-
-    .stApp { background: #fdf0f3; color: #2d1a20; }
-
-    section[data-testid="stSidebar"] {
-        background: #fce4ec !important;
-        border-right: 1px solid #f5b8cb;
-    }
-
-    .coach-card {
-        background: #fff5f7;
-        border: 1px solid #f5b8cb;
-        border-radius: 16px;
-        padding: 1.5rem 1.75rem;
-        margin-bottom: 1rem;
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 2px 16px rgba(233,100,139,0.08);
-    }
-    .coach-card::before {
-        content: '';
-        position: absolute;
-        top: 0; left: 0; right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, #e9648b, #f48fb1, #ce93d8);
-    }
-
-    .metric-row { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
-    .metric-tile {
-        flex: 1;
-        background: #fff5f7;
-        border: 1px solid #f5b8cb;
-        border-radius: 14px;
-        padding: 1rem 1.25rem;
-        text-align: center;
-        box-shadow: 0 2px 10px rgba(233,100,139,0.07);
-    }
-    .metric-tile .val {
-        font-family: 'Playfair Display', serif;
-        font-size: 2rem; font-weight: 800;
-        color: #e9648b; line-height: 1;
-    }
-    .metric-tile .lbl {
-        font-size: 0.68rem; color: #b07a8a;
-        text-transform: uppercase; letter-spacing: 0.1em; margin-top: 0.3rem;
-    }
-
-    .stButton > button {
-        background: #e9648b !important;
-        color: #fff !important;
-        font-family: 'DM Sans', sans-serif !important;
-        font-weight: 600 !important;
-        border: none !important;
-        border-radius: 10px !important;
-        padding: 0.55rem 1.5rem !important;
-        box-shadow: 0 2px 10px rgba(233,100,139,0.25) !important;
-        transition: background 0.15s !important;
-    }
-    .stButton > button:hover { background: #d4476d !important; }
-
-    .stTextInput input, .stNumberInput input {
-        background: #fff5f7 !important;
-        border-color: #f5b8cb !important;
-        border-radius: 8px !important;
-        color: #2d1a20 !important;
-    }
-
-    .stSuccess {
-        background: #fce4ec !important;
-        border-color: #f48fb1 !important;
-        color: #880e4f !important;
-        border-radius: 10px !important;
-    }
-    .stWarning { background: #fff8e1 !important; border-radius: 10px !important; }
-
-    .streamlit-expanderHeader {
-        font-family: 'Playfair Display', serif !important;
-        font-weight: 600 !important;
-        color: #2d1a20 !important;
-        background: #fff5f7 !important;
-        border: 1px solid #f5b8cb !important;
-        border-radius: 10px !important;
-    }
-    .streamlit-expanderContent {
-        background: #fff5f7 !important;
-        border: 1px solid #f5b8cb !important;
-        border-top: none !important;
-    }
-
-    hr { border-color: #f5b8cb !important; }
-
-    .stDownloadButton > button {
-        background: transparent !important;
-        color: #e9648b !important;
-        border: 1.5px solid #e9648b !important;
-        font-weight: 600 !important;
-        border-radius: 10px !important;
-        box-shadow: none !important;
-    }
-    .stDownloadButton > button:hover { background: #fce4ec !important; }
-
-    .stCaption { color: #b07a8a !important; font-size: 0.75rem !important; }
-    .stDataFrame { border: 1px solid #f5b8cb !important; border-radius: 10px !important; }
-    p, li { color: #2d1a20; }
-    </style>
-    """, unsafe_allow_html=True)
+        page_title=PAGE_TITLE,
+        page_icon="🧠",
+        layout="wide",
+        initial_sidebar_state="expanded",
+        menu_items={
+            'Get Help': None,
+            'Report a bug': None,
+            'About': None
+        }
+    )
+    inject_css()
 
     for k, v in {"plan": None, "feedback": None, "last_subjects": [], "last_hours": 0.0}.items():
         st.session_state.setdefault(k, v)
@@ -495,7 +385,7 @@ def main() -> None:
         st.markdown("### 📅 Your Study Plan")
         with st.container():
             st.markdown(
-                f"""<div class="coach-card"><div style='font-family:DM Sans,sans-serif;font-size:0.92rem;color:#2d1a20;line-height:2;'></div></div>""",
+                '<div class="coach-card"></div>',
                 unsafe_allow_html=True,
             )
             st.markdown(st.session_state.plan)
