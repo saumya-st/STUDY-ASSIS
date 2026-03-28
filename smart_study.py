@@ -93,7 +93,6 @@ def get_current_streak() -> int:
 # ── AI helpers ────────────────────────────────────────────────────────────────
 
 def _chat(prompt: str, system: str = "") -> Optional[str]:
-    """Single-turn Groq API call."""
     api_key = os.environ.get("GROQ_API_KEY", "")
     if not api_key:
         try:
@@ -173,7 +172,7 @@ Keep it warm, human, under 120 words.
 def inject_css() -> None:
     st.markdown("""
     <style>
-    /* Hide Streamlit UI */
+    /* Hide Streamlit default UI */
     header {visibility: hidden;}
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
@@ -187,32 +186,13 @@ def inject_css() -> None:
 
     .stApp { background: #fdf0f3; color: #2d1a20; }
 
-    section[data-testid="stSidebar"] {
-        background: #fce4ec !important;
-        border-right: 1px solid #f5b8cb;
-    }
+    /* Main content top padding */
+    .block-container { padding-top: 2rem !important; }
 
-    .coach-card {
-        background: #fff5f7;
-        border: 1px solid #f5b8cb;
-        border-radius: 16px;
-        padding: 1.5rem 1.75rem;
-        margin-bottom: 1rem;
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 2px 16px rgba(233,100,139,0.08);
-    }
-    .coach-card::before {
-        content: '';
-        position: absolute;
-        top: 0; left: 0; right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, #e9648b, #f48fb1, #ce93d8);
-    }
-
-    .metric-row { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
+    /* Metric tiles */
+    .metric-row { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
     .metric-tile {
-        flex: 1;
+        flex: 1; min-width: 120px;
         background: #fff5f7;
         border: 1px solid #f5b8cb;
         border-radius: 14px;
@@ -230,6 +210,48 @@ def inject_css() -> None:
         text-transform: uppercase; letter-spacing: 0.1em; margin-top: 0.3rem;
     }
 
+    /* Input form card */
+    .form-card {
+        background: #fff5f7;
+        border: 1px solid #f5b8cb;
+        border-radius: 16px;
+        padding: 1.5rem 1.75rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 16px rgba(233,100,139,0.08);
+        position: relative;
+        overflow: hidden;
+    }
+    .form-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #e9648b, #f48fb1, #ce93d8);
+    }
+
+    /* Plan card */
+    .plan-card {
+        background: #fff5f7;
+        border: 1px solid #f5b8cb;
+        border-radius: 16px;
+        padding: 1.75rem 2rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 16px rgba(233,100,139,0.08);
+        position: relative;
+        overflow: hidden;
+        line-height: 1.9;
+        font-size: 0.95rem;
+        color: #2d1a20;
+    }
+    .plan-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #e9648b, #f48fb1, #ce93d8);
+    }
+
+    /* Buttons */
     .stButton > button {
         background: #e9648b !important;
         color: #fff !important;
@@ -237,19 +259,31 @@ def inject_css() -> None:
         font-weight: 600 !important;
         border: none !important;
         border-radius: 10px !important;
-        padding: 0.55rem 1.5rem !important;
+        padding: 0.6rem 1.5rem !important;
         box-shadow: 0 2px 10px rgba(233,100,139,0.25) !important;
         transition: background 0.15s !important;
+        width: 100%;
     }
     .stButton > button:hover { background: #d4476d !important; }
 
+    /* Inputs */
     .stTextInput input, .stNumberInput input {
         background: #fff5f7 !important;
         border-color: #f5b8cb !important;
         border-radius: 8px !important;
         color: #2d1a20 !important;
+        font-size: 0.95rem !important;
+    }
+    .stTextInput label, .stNumberInput label, .stSlider label {
+        color: #2d1a20 !important;
+        font-weight: 600 !important;
+        font-size: 0.85rem !important;
     }
 
+    /* Slider */
+    [data-testid="stSlider"] { padding: 0.25rem 0; }
+
+    /* Alerts */
     .stSuccess {
         background: #fce4ec !important;
         border-color: #f48fb1 !important;
@@ -257,7 +291,9 @@ def inject_css() -> None:
         border-radius: 10px !important;
     }
     .stWarning { background: #fff8e1 !important; border-radius: 10px !important; }
+    .stError { border-radius: 10px !important; }
 
+    /* Expander */
     .streamlit-expanderHeader {
         font-family: 'Playfair Display', serif !important;
         font-weight: 600 !important;
@@ -287,16 +323,22 @@ def inject_css() -> None:
     .stCaption { color: #b07a8a !important; font-size: 0.75rem !important; }
     .stDataFrame { border: 1px solid #f5b8cb !important; border-radius: 10px !important; }
     p, li { color: #2d1a20; }
+
+    /* Section labels */
+    .section-label {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #2d1a20;
+        margin-bottom: 0.75rem;
+        margin-top: 1.5rem;
+    }
     </style>
     """, unsafe_allow_html=True)
 
 
 def metric_tile(value: str, label: str) -> str:
     return f'<div class="metric-tile"><div class="val">{value}</div><div class="lbl">{label}</div></div>'
-
-
-def card(content: str) -> None:
-    st.markdown(f'<div class="coach-card">{content}</div>', unsafe_allow_html=True)
 
 
 # ── App ───────────────────────────────────────────────────────────────────────
@@ -306,59 +348,23 @@ def main() -> None:
         page_title=PAGE_TITLE,
         page_icon="🧠",
         layout="wide",
-        initial_sidebar_state="expanded",
-        menu_items={
-            'Get Help': None,
-            'Report a bug': None,
-            'About': None
-        }
+        initial_sidebar_state="collapsed",
+        menu_items={'Get Help': None, 'Report a bug': None, 'About': None}
     )
     inject_css()
 
     for k, v in {"plan": None, "feedback": None, "last_subjects": [], "last_hours": 0.0}.items():
         st.session_state.setdefault(k, v)
 
-    # ── Sidebar ───────────────────────────────────────────────────────────────
-    with st.sidebar:
-        st.markdown("### 🧠 Study Coach")
-        st.markdown("---")
-
-        subjects_raw = st.text_input("Subjects", placeholder="Math, Physics, DSA",
-                                     help="Comma-separated subjects for today.")
-        subjects = [s.strip() for s in subjects_raw.split(",") if s.strip()] if subjects_raw else []
-
-        hours = st.number_input("Total hours available", min_value=0.5, max_value=16.0, value=3.0, step=0.5)
-
-        priorities: dict[str, int] = {}
-        if subjects:
-            st.markdown("**Priority (1–5)**")
-            for subj in subjects:
-                priorities[subj] = st.slider(subj, 1, 5, 3, key=f"pri_{subj}")
-
-        st.markdown("---")
-        generate = st.button("🚀 Generate Plan", use_container_width=True)
-        st.caption("Built for students who are trying 🤍")
-
-    # ── Sidebar toggle ───────────────────────────────────────────────────────
-    st.markdown("""
-    <style>
-    [data-testid="collapsedControl"] {
-        display: flex !important;
-        visibility: visible !important;
-        background: #e9648b !important;
-        border-radius: 0 10px 10px 0 !important;
-        color: white !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
     # ── Header ────────────────────────────────────────────────────────────────
     col_title, col_date = st.columns([3, 1])
     with col_title:
-        st.markdown("# AI Study Coach")
-        st.markdown("<p style='color:#b07a8a;font-size:0.85rem;margin-top:-0.5rem;'>Your personalised academic partner</p>", unsafe_allow_html=True)
+        st.markdown("# 🧠 AI Study Coach")
+        st.markdown("<p style='color:#b07a8a;font-size:0.9rem;margin-top:-0.5rem;'>Your personalised academic partner</p>", unsafe_allow_html=True)
     with col_date:
-        st.markdown(f"<p style='text-align:right;color:#b07a8a;font-size:0.8rem;padding-top:1rem;'>{datetime.date.today().strftime('%A, %d %b %Y')}</p>", unsafe_allow_html=True)
+        st.markdown(f"<p style='text-align:right;color:#b07a8a;font-size:0.8rem;padding-top:1.2rem;'>{datetime.date.today().strftime('%A, %d %b %Y')}</p>", unsafe_allow_html=True)
+
+    st.markdown("---")
 
     # ── Metrics ───────────────────────────────────────────────────────────────
     df_all      = load_sessions()
@@ -376,12 +382,36 @@ def main() -> None:
         unsafe_allow_html=True,
     )
 
+    # ── Input form — always visible, no sidebar ───────────────────────────────
+    st.markdown('<div class="section-label">📚 Plan Your Study Session</div>', unsafe_allow_html=True)
+    st.markdown('<div class="form-card">', unsafe_allow_html=True)
+
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        subjects_raw = st.text_input("Subjects", placeholder="e.g. Math, Physics, DSA",
+                                     help="Enter subjects separated by commas")
+        subjects = [s.strip() for s in subjects_raw.split(",") if s.strip()] if subjects_raw else []
+    with col2:
+        hours = st.number_input("Total hours available", min_value=0.5, max_value=16.0, value=3.0, step=0.5)
+
+    priorities: dict[str, int] = {}
+    if subjects:
+        st.markdown("**Set Priority for each subject (1 = low, 5 = high):**")
+        cols = st.columns(len(subjects))
+        for i, subj in enumerate(subjects):
+            with cols[i]:
+                priorities[subj] = st.slider(subj, 1, 5, 3, key=f"pri_{subj}")
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    generate = st.button("🚀 Generate My Study Plan", use_container_width=True)
+
     # ── Plan generation ───────────────────────────────────────────────────────
     if generate:
         if not subjects:
-            st.warning("Add at least one subject in the sidebar.")
+            st.warning("⚠️ Please enter at least one subject above.")
         else:
-            with st.spinner("Crafting your plan…"):
+            with st.spinner("✨ Crafting your personalised plan…"):
                 plan = generate_study_plan(subjects, hours, priorities)
                 if plan:
                     st.session_state.plan          = plan
@@ -389,46 +419,48 @@ def main() -> None:
                     st.session_state.last_hours    = hours
 
             if st.session_state.plan:
-                with st.spinner("Getting feedback…"):
+                with st.spinner("💬 Getting AI feedback…"):
                     history = df_all["focus_score"].tail(5).tolist() if not df_all.empty else []
                     st.session_state.feedback = get_ai_feedback(st.session_state.plan, history)
 
     # ── Show plan ─────────────────────────────────────────────────────────────
     if st.session_state.plan:
-        st.markdown("### 📅 Your Study Plan")
-        with st.container():
-            st.markdown(
-                f'''<div class="coach-card" style="padding:1.5rem 1.75rem;">
-                {st.session_state.plan.replace(chr(10), "<br>")}
-                </div>''',
-                unsafe_allow_html=True,
-            )
+        st.markdown("---")
+        st.markdown('<div class="section-label">📅 Your Study Plan</div>', unsafe_allow_html=True)
+        st.markdown(
+            f'<div class="plan-card">{st.session_state.plan.replace(chr(10), "<br>")}</div>',
+            unsafe_allow_html=True,
+        )
 
         if st.session_state.feedback:
-            with st.expander("💬 AI Feedback", expanded=True):
+            with st.expander("💬 AI Feedback on your plan", expanded=True):
                 st.markdown(st.session_state.feedback)
 
         if len(st.session_state.last_subjects) > 1:
-            st.markdown("### 📊 Time Distribution")
+            st.markdown('<div class="section-label">📊 Time Distribution</div>', unsafe_allow_html=True)
             subj_list      = st.session_state.last_subjects
             total_priority = sum(priorities.get(s, 3) for s in subj_list)
             times = {s: round(st.session_state.last_hours * priorities.get(s, 3) / total_priority, 2) for s in subj_list}
             st.bar_chart(pd.DataFrame.from_dict(times, orient="index", columns=["Hours"]), color="#e9648b")
 
-        st.success("Plan ready. Just open the first block and start. ⚡")
+        st.success("✅ Plan ready. Open the first block and start. You've got this! ⚡")
 
     # ── Session logger ────────────────────────────────────────────────────────
     st.markdown("---")
-    st.markdown("### 📈 Log Today's Session")
+    st.markdown('<div class="section-label">📈 Log Today\'s Session</div>', unsafe_allow_html=True)
 
     c1, c2 = st.columns([2, 1])
     with c1:
-        focus_score = st.slider("Focus score", 1, 10, 7, help="How focused were you today?")
+        st.markdown("**How focused were you today?**")
+        focus_score = st.slider("Focus Score", 1, 10, 7, label_visibility="collapsed")
+        st.markdown(f"<p style='color:#b07a8a;font-size:0.8rem;margin-top:-0.5rem;'>Score: {focus_score}/10</p>", unsafe_allow_html=True)
     with c2:
+        st.markdown("<br>", unsafe_allow_html=True)
         st.markdown(
-            f"<br><div style='font-family:Playfair Display,serif;font-size:2.5rem;font-weight:800;color:#e9648b;text-align:center;'>"
-            f"{focus_score * 10}%</div>"
-            f"<div style='text-align:center;color:#b07a8a;font-size:0.7rem;letter-spacing:0.1em;'>PRODUCTIVITY</div>",
+            f"<div style='background:#fff5f7;border:1px solid #f5b8cb;border-radius:14px;padding:1rem;text-align:center;'>"
+            f"<div style='font-family:Playfair Display,serif;font-size:2.5rem;font-weight:800;color:#e9648b;line-height:1;'>{focus_score * 10}%</div>"
+            f"<div style='color:#b07a8a;font-size:0.7rem;letter-spacing:0.1em;margin-top:0.25rem;'>PRODUCTIVITY</div>"
+            f"</div>",
             unsafe_allow_html=True,
         )
 
@@ -436,7 +468,7 @@ def main() -> None:
     with save_col:
         if st.button("💾 Save Session", use_container_width=True):
             if not st.session_state.last_subjects:
-                st.warning("Generate a plan first so we know what you studied.")
+                st.warning("⚠️ Generate a plan first so we know what you studied.")
             else:
                 save_session(SessionLog(
                     date=str(datetime.date.today()),
@@ -445,11 +477,12 @@ def main() -> None:
                     focus_score=focus_score,
                     streak=streak + 1,
                 ))
-                st.success("Session saved! Keep the streak alive 🔥")
+                st.success("🔥 Session saved! Keep the streak alive!")
                 st.rerun()
 
     # ── History ───────────────────────────────────────────────────────────────
     if not df_all.empty:
+        st.markdown("---")
         with st.expander("📜 Session History & Export", expanded=False):
             display_df = df_all.copy()
             display_df.index = range(1, len(display_df) + 1)
@@ -464,14 +497,14 @@ def main() -> None:
                     use_container_width=True,
                 )
 
-            st.markdown("**Focus Score Trend**")
+            st.markdown("**📈 Focus Score Trend**")
             trend = df_all[["date", "focus_score"]].copy()
             trend["date"] = pd.to_datetime(trend["date"])
             trend = trend.groupby("date")["focus_score"].mean().reset_index().set_index("date")
             st.line_chart(trend, color="#e9648b")
 
     st.markdown("---")
-    st.caption("AI Study Coach · Built with Streamlit + Groq · 2025")
+    st.caption("AI Study Coach · Built with Streamlit + Groq · 2025 🌸")
 
 
 if __name__ == "__main__":
